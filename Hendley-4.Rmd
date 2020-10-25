@@ -1,0 +1,147 @@
+---
+output: pdf_document
+---
+
+John Hendley and Sonish Lamsal
+
+STA6375: Computational Statistics I
+
+\begin{center}
+Homework 4
+\end{center}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse"); library("extrafont")
+#theme_set(theme_minimal(base_family = "Roboto Condensed"))
+theme_update(panel.grid.minor = element_blank())
+```
+
+## Question 1
+### Part A
+```{r num1a}
+ggplot(diamonds, aes(carat)) +
+  geom_histogram(bins = 30) +
+  geom_freqpoly(color = 'red', bins = 30) +
+  scale_x_continuous(minor_breaks = NULL) +
+  scale_y_continuous(minor_breaks = NULL) +
+  theme_minimal()
+```
+
+### Part B
+``` {r num1b}
+x <- seq(0, 2*pi, pi/50)
+y <- seq(0, 2*pi, pi/50)
+df = data.frame(x, y)
+
+d <- c()
+for (x in 0:100) {
+  for (y in 0:100) {
+    d <- c(d, .5 * (sin(2*x*pi/50) + sin(2*y*pi/50)))
+  }
+}
+
+df2 = data.frame(df, d)
+#x <- "x" = 1:10, "y" = 1:10
+#y <- seq(0, 2 * pi, pi / 6)
+x <- c(0:2*pi)
+y <- c(0:2*pi)
+#fxy <- function(x,y) .5 * (sin(2*x) + sin(2*y))
+#df <- expand.grid("x" = 0 : 6.5, "y" = 0 : 6.5)
+#df <- tibble(x, y, d)
+#fxy <- tibble(x, y, z = .5 * (sin(2*x) + sin(2*y)))
+#df2 <- data.frame(fxy)
+ggplot(df2, aes(x, y, fill = d)) +
+  geom_density2d_filled() +
+  geom_point() +
+  theme_minimal() +
+  scale_x_continuous(breaks = c(0, pi/2, pi, 3*pi/2, 2*pi),
+    label = c(0, expr(pi / 2), expression(pi), expr(3 * pi / 2), expr(2 * pi)),
+    minor_breaks = NULL) +
+  scale_y_continuous(breaks = c(0, pi/2, pi, 3*pi/2, 2*pi),
+    label = c(0, expr(pi / 2), expression(pi), expr(3 * pi / 2), expr(2 * pi)),
+    minor_breaks = NULL) +
+  coord_equal()
+```
+
+
+``` {r test3}
+set.seed(1)
+fuzz <- rnorm(nrow(df))
+ggplot(df, aes(x, y, fill = fuzz)) +
+  theme_minimal() +
+  geom_tile()
+
+df <- tibble(
+  x = c(rnorm(n, -1), rnorm(n, 1)),
+  p = logistic(0 + 2*x),
+  y = rbinom(2*n, 1, p)
+)
+```
+
+
+``` {r tester2}
+x <- c()
+y <- c()
+for (i in 0:10) {
+  x <- c(x, cos(i*pi/5))
+  y <- c(y, sin(i*pi/5))
+}
+decagon <- data.frame(x, y)
+ggplot(decagon, aes(x, y)) +
+  geom_point() +
+  geom_path() +
+  theme_minimal() +
+  coord_equal()
+```
+
+``` {r tester}
+x <- seq(0, 1, 0.001)
+fx <- sin(2*pi*x)
+sine <- data.frame(x, fx)
+ggplot(sine, aes(x, fx)) +
+  theme_minimal() +
+  geom_line()
+```
+
+
+### Part C
+``` {r num1c}
+dens_df <- data.frame(x = 1:5, y = 1:5)
+ggplot(dens_df) +
+  geom_point(aes(x,y), color = "red", size = 4) +
+  theme_minimal() +
+  scale_x_continuous(limits = c(0, 6), minor_breaks = NULL) +
+  scale_y_continuous(limits = c(0, 6), minor_breaks = NULL) +
+  coord_equal()
+```
+
+
+### Part D
+cut_interval() takes a lower and upper bound as well as number of groupings and divides the region up into the desired number of groupings. For example, cut_interval(10:20, 5) divides the interval into the following groupings: [10,12], (12, 14], (14, 16], (16, 18], (18, 20].
+
+cut_number() takes two major arguments, x and n. The x is a vector that describes the upper and lower bound. The n is the number of groupings or bins. Also, the upper bound of x is the frequency that is divided into each of the bins. For example, cut_number(6:18, 3) creates 3 bins [6, 10], (10, 14], (14, 18] with 13 total frequency/objects in those bins (since there are 13 integers from 6 to 18). Those 13 objects are divided over the 3 bins so that the first gets 5 and the last two get 4.
+
+cut_width also takes two key arguments, x and n. The x is again a vector that describes the upper and lower bound. But in this case the n is the width of each bin. Also, the upper bound of x is the frequency that is divided into each of the bins. For example, cut_width(3:11, 2) creates intervals of size 2 from 3 to 11: [3, 5], (5, 7], (7, 9], (9, 11]. with 9 total frequency/objects in those bins (since there are 9 integers from 3 to 11). Those 9 objects are divided over the 4 bins so that the first gets 3 and the last three get 2.
+
+
+### Part E
+``` {r num1e}
+set.seed(2)
+logistic <- function(x) 1 / (1 + exp(-x))
+n <- 50
+df <- tibble(
+  x = c(rnorm(n, -1), rnorm(n, 1)),
+  p = logistic(0 + 2*x),
+  y = rbinom(2*n, 1, p)
+)
+ggplot(df, aes(x, jitter(y, amount = 0.03))) +
+  theme_minimal() +
+  geom_point() +
+  geom_ribbon(aes(ymin = p - 0.1, ymax = p + 0.1),
+    fill = "grey70", alpha = 0.6) +
+  geom_line(aes(x, p), color = 'royalblue2', size = 1) +
+  scale_x_continuous("x", limits = c(-4, 4), minor_breaks = NULL) +
+  scale_y_continuous("y", limits = c(-.1, 1.1),
+        breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), minor_breaks = NULL)
+```
