@@ -1,0 +1,35 @@
+---
+title: "stat-comp-hwk-4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1b
+```{r}
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis",
+  ggplot2.discrete.colour = "brewer",
+  ggplot2.discrete.fill = "brewer")
+library(patchwork)
+library(tidyverse)
+x <- seq(0,2,length.out = 51)
+y <- seq(0,2,length.out = 51)
+f <- function(x,y){
+ 1/2*(2*sinpi(x)*cospi(x) + 2*sinpi(y)*cospi(y))
+}
+df <- expand.grid(x=x, y=y)
+value <- vector()
+for (i in seq_along(df$x)) {
+ value[i] = f(df$x[i],df$y[i])  
+}
+df$value <- value
+ggplot(df, aes(x,y))+
+  geom_raster(aes(fill= value),interpolate = TRUE)
+  
+
+```
+
