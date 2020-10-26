@@ -20,12 +20,17 @@ theme_update(panel.grid.minor = element_blank())
 ## Question 1
 ### Part A
 ```{r num1a}
+library("tidyverse"); library("extrafont")
+theme_set(theme_minimal(base_family = "Roboto Condensed"))
+theme_update(panel.grid.minor = element_blank())
 ggplot(diamonds, aes(carat)) +
   geom_histogram(bins = 30) +
   geom_freqpoly(color = 'red', bins = 30) +
   scale_x_continuous(minor_breaks = NULL) +
   scale_y_continuous(minor_breaks = NULL) +
   theme_minimal()
+diamonds
+range(diamonds$carat)
 ```
 
 ### Part B
