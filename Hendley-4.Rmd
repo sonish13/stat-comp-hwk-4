@@ -26,11 +26,11 @@ theme_update(panel.grid.minor = element_blank())
 ggplot(diamonds, aes(carat)) +
   geom_histogram(bins = 30) +
   geom_freqpoly(color = 'red', bins = 30) +
+  geom_point(stat="bin" , bins = 30 , color ="red") +
   scale_x_continuous(minor_breaks = NULL) +
   scale_y_continuous(minor_breaks = NULL) +
   theme_minimal()
-diamonds
-range(diamonds$carat)
+
 ```
 
 ### Part B
@@ -67,6 +67,7 @@ ggplot(df2, aes(x, y, fill = d)) +
     label = c(0, expr(pi / 2), expression(pi), expr(3 * pi / 2), expr(2 * pi)),
     minor_breaks = NULL) +
   coord_equal()
+sort
 ```
 
 
@@ -100,15 +101,21 @@ df <- tibble(
   p = logistic(0 + 2*x),
   y = rbinom(2*n, 1, p)
 )
+m = mean(df$p)
+s = sd(df$p)
 ggplot(df, aes(x, jitter(y, amount = 0.03))) +
   theme_minimal() +
-  geom_point() +
-  geom_ribbon(aes(ymin = p - 0.1, ymax = p + 0.1),
-    fill = "grey70", alpha = 0.6) +
+  geom_jitter() +
+  geom_ribbon(aes(ymin = pnorm(p,mean = m, sd=s),
+                  ymax = pnorm(p,mean = m, sd=s),
+              fill = "grey70", alpha = 0.6) +
   geom_line(aes(x, p), color = 'royalblue2', size = 1) +
   scale_x_continuous("x", limits = c(-4, 4), minor_breaks = NULL) +
   scale_y_continuous("y", limits = c(-.1, 1.1),
         breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), minor_breaks = NULL)
+# dnorm(0.997833779,mean = mean(df$p), sd=sd(df$p))
+# pnorm(0.997833779,mean = mean(df$p), sd=sd(df$p))
+
 ```
 
 
