@@ -104,9 +104,7 @@ eigen_qr <- function(A, tol = sqrt(.Machine$double.eps)) {
   A_1 <- R_0 %*% Q_0
   U_1 <- make_first_row_positive(U_0 %*% Q_0)
   i<- 0 
-  while ((norm(A_1)-norm(A_0)) > tol) {
-    print(norm(A_0))
-    print(norm(A_1))
+  while ((norm(A_1-A_0)) > tol) {
     A_0 <- A_1
     U_0 <- U_1
     A_1 <- qr.R(qr(A_0)) %*% qr.Q(qr(A_0))
