@@ -93,6 +93,7 @@ cut_width also takes two key arguments, x and n. The x is again a vector that de
 
 ### Part E
 ``` {r num1e}
+library(tidyverse)
 set.seed(2)
 logistic <- function(x) 1 / (1 + exp(-x))
 n <- 50
@@ -101,20 +102,17 @@ df <- tibble(
   p = logistic(0 + 2*x),
   y = rbinom(2*n, 1, p)
 )
-m = mean(df$p)
-s = sd(df$p)
+width <- c(seq(0,0.01, length.out = 50),(seq(0.01,0, length.out = 50)))
+df <- df[order(df$x),]
+df$width <- width
 ggplot(df, aes(x, jitter(y, amount = 0.03))) +
   theme_minimal() +
   geom_jitter() +
-  geom_ribbon(aes(ymin = pnorm(p,mean = m, sd=s),
-                  ymax = pnorm(p,mean = m, sd=s),
-              fill = "grey70", alpha = 0.6) +
   geom_line(aes(x, p), color = 'royalblue2', size = 1) +
+ # geom_ribbon(aes(ymin = p - width , ymax = p + width) +
   scale_x_continuous("x", limits = c(-4, 4), minor_breaks = NULL) +
   scale_y_continuous("y", limits = c(-.1, 1.1),
         breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), minor_breaks = NULL)
-# dnorm(0.997833779,mean = mean(df$p), sd=sd(df$p))
-# pnorm(0.997833779,mean = mean(df$p), sd=sd(df$p))
 
 ```
 

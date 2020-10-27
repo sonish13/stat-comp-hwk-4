@@ -72,6 +72,14 @@ ggplot() +
 ## Question 2b
 
 ```{r}
+(A <- matrix(c(1:4, 6:10), nrow = 3, byrow = TRUE))
+(A <- crossprod(A))
+eigen_qr <- function(A, tol = sqrt(.Machine$double.eps)) {
+  A_0 <- 
+  qr.Q(qr(A))
+  qr.R(qr(A))
+}
+eigen_qr(A)
 
 ```
 
