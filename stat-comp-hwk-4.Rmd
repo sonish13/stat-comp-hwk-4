@@ -7,6 +7,20 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Question 1a
+```{r num1a}
+library("tidyverse"); library("extrafont")
+theme_set(theme_minimal(base_family = "Roboto Condensed"))
+theme_update(panel.grid.minor = element_blank())
+ggplot(diamonds, aes(carat)) +
+  geom_histogram(bins = 30) +
+  geom_freqpoly(color = 'red', bins = 30) +
+  geom_point(stat="bin" , bins = 30 , color ="red") +
+  scale_x_continuous(minor_breaks = NULL) +
+  scale_y_continuous(minor_breaks = NULL) +
+  theme_minimal()
+
+```
 ## Question 1b
 ```{r}
 options(
@@ -29,7 +43,7 @@ for (i in seq_along(df$x)) {
 df$value <- value
 p1 = ggplot(df, aes(x,y))+
       geom_raster(aes(fill= value),interpolate = TRUE) +
-      scale_fill_continuous(name = "f(x,y)") +
+      scale_fill_continuous(name = "f(x,y)" ) +
       theme_minimal() +
       scale_x_continuous(breaks = c(0, pi/2, pi, 3*pi/2, 2*pi),
       label = c(0, expr(pi / 2), expression(pi), expr(3 * pi / 2), expr(2 * pi)),
@@ -66,20 +80,66 @@ ggplot() +
   scale_x_continuous(limits = c(0, 6), minor_breaks = NULL) +
   scale_y_continuous(limits = c(0, 6), minor_breaks = NULL) +
   coord_equal()
-?MASS::kde2d
 ```
 
 ## Question 2b
 
 ```{r}
+dot <- function(x, y){
+  if (length(x) != length(y)) stop("vectors `x` and `y` are not of the same length.")
+  # loop over the vector, accumulating the inner product
+  out <- 0
+  for (i in seq_along(x)) out <- out + x[i]*y[i]
+  # return inner product
+  out
+}
+norm <- function(x) sqrt(dot(x, x))
+make_positive <- function(x) sign(x[1]) * x
+make_first_row_positive <- function(A) apply(A, 2, make_positive)
+eigen_qr <- function(A, tol = sqrt(.Machine$double.eps)) {
+  A_0 <- A
+  U_0 <- diag(nrow = nrow(A))
+  Q_0 <- qr.Q(qr(A))
+  R_0 <- qr.R(qr(A))
+  A_1 <- R_0 %*% Q_0
+  U_1 <- make_first_row_positive(U_0 %*% Q_0)
+  i<- 0 
+  while ((norm(A_1)-norm(A_0)) > tol) {
+    print(norm(A_0))
+    print(norm(A_1))
+    A_0 <- A_1
+    U_0 <- U_1
+    A_1 <- qr.R(qr(A_0)) %*% qr.Q(qr(A_0))
+    U_1 <- make_first_row_positive(U_0 %*% qr.Q(qr(A_0))) 
+    i = i + 1
+  }
+  values <- vector()
+for (i in 1:nrow(A)) {
+  values[i] <- A_1[i,i] 
+}
+ out <- list("values" = values, "vectore" = U_1)
+ return(out)
+}
 (A <- matrix(c(1:4, 6:10), nrow = 3, byrow = TRUE))
 (A <- crossprod(A))
-eigen_qr <- function(A, tol = sqrt(.Machine$double.eps)) {
-  A_0 <- 
-  qr.Q(qr(A))
-  qr.R(qr(A))
-}
-eigen_qr(A)
+eigen_qr(A)$values
 
+```
+
+## Question 2c
+```{r}
+det_qr <- function(A) {
+  A <- eigen_qr(A)$values
+  out <- 1
+    for(i in 1:length(A)){
+         out <- out*A[i]
+    }
+    out
+}
+set.seed(2)
+(A <- matrix(rpois(64, lambda = 5), nrow = 8))
+(A <- crossprod(A))
+det_qr(A)
+det(A)
 ```
 
