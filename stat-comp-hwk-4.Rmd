@@ -82,6 +82,75 @@ ggplot() +
   coord_equal()
 ```
 
+
+## Question 2a
+```{r num2a}
+dot <- function(x,y) {
+  z <- c()
+  for (i in 1:length(x)) {
+    z <- c(z, x[i]*y[i])
+  }
+  z  
+}
+
+norm <- function(c) {
+  total <- 0
+  for (j in 1:length(c)) {
+    total <- total + dot(c[j],c[j])
+  }
+  sqrt(total)
+}
+
+normalize <- function(v) {
+  v / norm(v)
+}
+
+is_zero <- function(x) {
+  norm(x) <= .Machine$double.eps
+}
+
+# Projects y onto x
+project_onto <- function(y,x) {
+  if (is_zero(x)) {
+    c(0,0)
+  } else {
+  (dot(y,x)/norm(x)^2)*x
+  }
+}
+
+emax <- function(A, tol) {
+  dif <- 1
+  v <- matrix (c(1:3), nrow = 3)
+  
+  # The while loop runs until the difference betwen consecutive iterations
+  # falls below a particular threshhold
+  while (dif > tol) {
+    old_v <- v
+    v <- normalize(A %*% v)
+    v <- sign(v[1]) * v
+    dif <- max(abs(v - old_v))
+  }
+  #Zeros out values that are effectively zero
+  vector <- replace(v, v < 10 ^ - 6, 0)
+  value <- t(v) %*% A %*% v
+
+  print("$values$")
+  print(value)
+  print("$vector")
+  print(t(vector))
+}
+
+A <- matrix (c(1:4, 6:10), nrow = 3, byrow = TRUE)
+tol <-  sqrt(.Machine$double.eps)
+
+emax(A, tol)
+
+eigen(A)
+
+emax(-A, tol)
+```
+
+
 ## Question 2b
 
 ```{r}
