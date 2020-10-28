@@ -1,15 +1,17 @@
 ---
 title: "stat-comp-hwk-4"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error=TRUE, dev="cairo_pdf")
 ```
 
 ## Question 1a
-```{r num1a}
-library("tidyverse"); library("extrafont")
+```{r message=FALSE}
+library("tidyverse")
+library("extrafont")
 theme_set(theme_minimal(base_family = "Roboto Condensed"))
 theme_update(panel.grid.minor = element_blank())
 ggplot(diamonds, aes(carat)) +
@@ -21,6 +23,7 @@ ggplot(diamonds, aes(carat)) +
   theme_minimal()
 
 ```
+
 ## Question 1b
 ```{r}
 options(
@@ -71,28 +74,62 @@ p1 + p2
 ```{r}
 df <- data.frame(x = 1:5, y = 1:5)
 dens_df<- data.frame(expand.grid(x = MASS::kde2d(df$x,df$y)$x,y = MASS::kde2d(df$x,df$y)$y),
-                     density = as.vector(MASS::kde2d(df$x,df$y)$z)
-                      )
+                     density = as.vector(MASS::kde2d(df$x,df$y)$z))
 ggplot() +
+  #stat_density2d(data = dens_df,aes(x,y,fill= density)), geom = "raster", contour = FALSE )
   geom_raster(data=dens_df,aes(x,y, fill=density), interpolate = TRUE) +
   geom_point(data=df,aes(x,y), color = "red", size = 4) +
   theme_minimal() +
   scale_x_continuous(limits = c(0, 6), minor_breaks = NULL) +
   scale_y_continuous(limits = c(0, 6), minor_breaks = NULL) +
   coord_equal()
+
 ```
 
 
-## Question 2a
-```{r num2a}
-dot <- function(x,y) {
-  z <- c()
-  for (i in 1:length(x)) {
-    z <- c(z, x[i]*y[i])
-  }
-  z  
-}
+##Question 1d
 
+cut_interval() takes a lower and upper bound as well as number of groupings and divides the region up into the desired number of groupings. For example, cut_interval(10:20, 5) divides the interval into the following groupings: [10,12], (12, 14], (14, 16], (16, 18], (18, 20].
+
+cut_number() takes two major arguments, x and n. The x is a vector that describes the upper and lower bound. The n is the number of groupings or bins. Also, the upper bound of x is the frequency that is divided into each of the bins. For example, cut_number(6:18, 3) creates 3 bins [6, 10], (10, 14], (14, 18] with 13 total frequency/objects in those bins (since there are 13 integers from 6 to 18). Those 13 objects are divided over the 3 bins so that the first gets 5 and the last two get 4.
+
+cut_width also takes two key arguments, x and n. The x is again a vector that describes the upper and lower bound. But in this case the n is the width of each bin. Also, the upper bound of x is the frequency that is divided into each of the bins. For example, cut_width(3:11, 2) creates intervals of size 2 from 3 to 11: [3, 5], (5, 7], (7, 9], (9, 11]. with 9 total frequency/objects in those bins (since there are 9 integers from 3 to 11). Those 9 objects are divided over the 4 bins so that the first gets 3 and the last three get 2.
+
+
+
+
+
+## Question 1e
+```{r warning=FALSE} 
+set.seed(2)
+logistic <- function(x) 1 / (1 + exp(-x))
+n <- 50
+df <- tibble(
+  x = c(rnorm(n, -1), rnorm(n, 1)),
+  p = logistic(0 + 2*x),
+  y = rbinom(2*n, 1, p)
+)
+ggplot(df, aes(x , y)) +
+  theme_minimal() +
+  geom_jitter(width = 0.05, height = 0.05)+
+  stat_smooth(method= "glm", method.args = list(family = "binomial"))
+  geom_line(aes(x, p), color = 'royalblue2', size = 1) +
+   scale_x_continuous("x", limits = c(-4, 4), minor_breaks = NULL) +
+   scale_y_continuous("y", limits = c(-.1, 1.1),
+     breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), minor_breaks = NULL)
+
+
+```
+
+```{r echo=FALSE}
+dot <- function(x, y){
+  if (length(x) != length(y)) stop("vectors `x` and `y` are not of the same length.")
+  # loop over the vector, accumulating the inner product
+  out <- 0
+  for (i in seq_along(x)) out <- out + x[i]*y[i]
+  # return inner product
+  out
+}
 norm <- function(c) {
   total <- 0
   for (j in 1:length(c)) {
@@ -118,35 +155,31 @@ project_onto <- function(y,x) {
   }
 }
 
-emax <- function(A, tol) {
+```
+
+## Question 2a
+```{r num2a}
+emax <- function(A, tol = sqrt(.Machine$double.eps)) {
   dif <- 1
   v <- matrix (c(1:3), nrow = 3)
   
-  # The while loop runs until the difference betwen consecutive iterations
-  # falls below a particular threshhold
+
   while (dif > tol) {
     old_v <- v
     v <- normalize(A %*% v)
     v <- sign(v[1]) * v
     dif <- max(abs(v - old_v))
   }
-  #Zeros out values that are effectively zero
   vector <- replace(v, v < 10 ^ - 6, 0)
   value <- t(v) %*% A %*% v
-
-  print("$values$")
-  print(value)
-  print("$vector")
-  print(t(vector))
+  out<- list("values"=value, "vector"= t(vector))
+  out
 }
 
 A <- matrix (c(1:4, 6:10), nrow = 3, byrow = TRUE)
 tol <-  sqrt(.Machine$double.eps)
-
 emax(A, tol)
-
 eigen(A)
-
 emax(-A, tol)
 ```
 
@@ -154,15 +187,6 @@ emax(-A, tol)
 ## Question 2b
 
 ```{r}
-dot <- function(x, y){
-  if (length(x) != length(y)) stop("vectors `x` and `y` are not of the same length.")
-  # loop over the vector, accumulating the inner product
-  out <- 0
-  for (i in seq_along(x)) out <- out + x[i]*y[i]
-  # return inner product
-  out
-}
-norm <- function(x) sqrt(dot(x, x))
 make_positive <- function(x) sign(x[1]) * x
 make_first_row_positive <- function(A) apply(A, 2, make_positive)
 eigen_qr <- function(A, tol = sqrt(.Machine$double.eps)) {
@@ -184,7 +208,7 @@ eigen_qr <- function(A, tol = sqrt(.Machine$double.eps)) {
 for (i in 1:nrow(A)) {
   values[i] <- A_1[i,i] 
 }
- out <- list("values" = values, "vectore" = U_1)
+ out <- list("values" = values, "vector" = U_1)
  return(out)
 }
 (A <- matrix(c(1:4, 6:10), nrow = 3, byrow = TRUE))
