@@ -100,7 +100,7 @@ cut_width also takes two key arguments, x and n. The x is again a vector that de
 
 
 ## Question 1e
-```{r warning=FALSE} 
+```{r message=FALSE} 
 set.seed(2)
 logistic <- function(x) 1 / (1 + exp(-x))
 n <- 50
